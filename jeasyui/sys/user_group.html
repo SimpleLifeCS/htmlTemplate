@@ -1,0 +1,151 @@
+<div id="sys_user_group_container" style="padding: 10px; margin: 0px;">
+
+        <div id="sys_user_group_back" class="easyui-panel">
+            <table class="ext-data-table">
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    
+    <div class="ext-div-line"></div>
+
+    <table id="sys_user_group_datagrid"></table>
+
+    <div id="sys_user_group_datagrid_toolbar">
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delUserGroup()"></a>
+    </div>
+
+    <table id="sys_user_group_ext_datagrid"></table>
+
+    <div id="sys_user_group_ext_datagrid_toolbar">
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addUserGroup()"></a>
+    </div>
+
+    <!-- <div class="ext-div-line"></div>
+    <div id="sys_user_group_tips" class="ext-warning" class="easyui-panel">
+        Tips
+    </div> -->
+
+    <script type="text/javascript">
+        var url = localStorage.getItem('sys_user_group_url');
+        var globalQueryParams = {username:getParameterByName('username',url)};
+
+    // ===================================
+    // datagrid
+    $('#sys_user_group_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_user_group/query.json',
+        method: 'get',
+        queryParams: globalQueryParams,
+        cls: 'ext-datagrid-float-left',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 520,
+        striped: true,
+        toolbar: '#sys_user_group_datagrid_toolbar',
+        onBeforeSelect: function(index,row){
+            if(row.id == 0){
+                return false;
+            }
+            return true;
+        },
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'groupname', title: 'Groupname', width: 100 },
+                { field: 'viewname', title: 'Viewname', width: 100 },
+                { field: 'id', title: 'Default', width: 100, formatter: function(value,row,index){
+                    if(value == 0) {
+                        return true;
+                    }
+                    return false;
+                } },
+            ]
+        ]
+    });
+
+    $('#sys_user_group_ext_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_user_group/query_ext.json',
+        method: 'get',
+        queryParams: globalQueryParams,
+        cls: 'ext-datagrid-float-left',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 520,
+        striped: true,
+        toolbar: '#sys_user_group_ext_datagrid_toolbar',
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'groupname', title: 'Groupname', width: 100 },
+                { field: 'viewname', title: 'Viewname', width: 100 }
+            ]
+        ]
+    });
+
+
+    // ===================================
+    // add user group
+    function addUserGroup() {
+        var row = $('#sys_user_group_ext_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a row!', 'info');
+            return false;
+        }
+        var reqData = {username: globalQueryParams.username,groupname: row.groupname};
+        $.post('http://local.com/api/sys/sys_user_group/save.json',reqData,function(data,textStatus,jqXHR){
+            if(data.success){
+                $('#sys_user_group_datagrid').datagrid('reload');
+                $('#sys_user_group_ext_datagrid').datagrid('reload');
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json');
+    }
+    // ===================================
+
+
+    // ===================================
+    // del user group
+    function delUserGroup() {
+        var row = $('#sys_user_group_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#sys_user_group_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_user_group_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {username: globalQueryParams.username, groupname: row.groupname};
+                $.post('http://local.com/api/sys/sys_user_group/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#sys_user_group_datagrid').datagrid('reload');
+                        $('#sys_user_group_ext_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+    // ===================================
+
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

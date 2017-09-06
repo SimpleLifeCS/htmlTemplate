@@ -1,0 +1,90 @@
+
+    <div id="sys_user_add_container" style="padding: 10px; margin: 0px;">
+        <form id="sys_user_add_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add User" data-options="inline: true">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Email</td>
+                    <td><input class="easyui-textbox" type="text" name="email" data-options="required:true,fit:true" /></td>
+                    <td>Username</td>
+                    <td><input class="easyui-textbox" type="text" name="username" data-options="required:true,fit:true" /></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td><input class="easyui-textbox" type="text" name="password" data-options="required:true,fit:true" /></td>
+                    <td>Group</td>
+                    <td><input type="text" id="sys_user_add_form_groupname" name="groupname"/></td>
+                    <td>Role</td>
+                    <td><input type="text" id="sys_user_add_form_rolename" name="rolename"/></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <a href="#" id="sys_user_add_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript" src="http://res.local.com/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#sys_user_add_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var reqData = $('#sys_user_add_form').serializeJSON();
+            reqData.password = CryptoJS.MD5(reqData.username.concat('@').concat(reqData.password)).toString();
+
+            $.post('http://local.com/api/sys/sys_user/save.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });
+
+    $('#sys_user_add_form_groupname').combobox({
+        required: true,
+        editable: false,
+        fit: true,
+        url: 'http://local.com/api/sys/sys_group/query_all.json',
+        method: 'get',
+        valueField: 'groupname',
+        textField: 'viewname',
+        loadFilter: function(data){
+            return data.data;
+        }
+    });
+
+    $('#sys_user_add_form_rolename').combobox({
+        required: true,
+        editable: false,
+        fit: true,
+        url: 'http://local.com/api/sys/sys_role/query_all.json',
+        method: 'get',
+        valueField: 'rolename',
+        textField: 'viewname',
+        loadFilter: function(data){
+            return data.data;
+        }
+    });
+
+
+    
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

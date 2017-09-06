@@ -1,0 +1,135 @@
+<div id="sys_role_permission_container" style="padding: 10px; margin: 0px;">
+
+
+    <table id="sys_role_permission_role_datagrid"></table>
+
+<div class="easyui-panel" style="width: 200px; height: 660px; padding: 10px;" data-options="cls: 'ext-datagrid-float-left'">
+    <div id="sys_role_permission_tree"></div>
+</div>
+
+    <!-- <div class="ext-div-line"></div>
+    <div id="sys_role_permission_tips" class="ext-warning" class="easyui-panel">
+        Tips
+    </div> -->
+
+    <script type="text/javascript">
+
+$(function(){
+
+    var disableCheckEvent = false;
+
+    $('#sys_role_permission_role_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_role/query.json',
+        method: 'get',
+        queryParams: {skipDisabled:'true'},
+        cls: 'ext-datagrid-float-left',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 660,
+        width: 600,
+        striped: true,
+        onClickRow: function(index,row){
+                    $.get('http://local.com/api/sys/sys_role_permission/query.json',{_:$.now(),rolename: row.rolename},function(data,textStatus,jqXHR){
+                        if(data.success){
+                            disableCheckEvent = true;
+                            // get checked
+                            var nodes = $('#sys_role_permission_tree').tree('getChecked', ['checked','indeterminate']);
+                            $.each(nodes,function(i,e){
+                                $('#sys_role_permission_tree').tree('uncheck', e.target);
+                            });
+
+                            $.each(data.data,function(i,e){
+                                var checkedNode = $('#sys_role_permission_tree').tree('find', e);
+                                $('#sys_role_permission_tree').tree('check', checkedNode.target);
+                            });
+                            disableCheckEvent = false;
+                        } else {
+                            $.messager.show({msg:data.message});
+                        }
+                    },'json');
+
+            // TODO clear tree checked
+        },
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'rolename', title: 'Rolename', width: 300 },
+                { field: 'viewname', title: 'Viewname', width: 200 },
+                { field: 'disabled', title: 'Disabled', width: 60}
+            ]
+        ]
+    });
+
+    var disabledNodes = [];
+
+    $.get('http://local.com/api/sys/sys_permission/query_tree.json',{},function(data,textStatus,jqXHR){
+        if(data.success){
+            var resData = data.data;
+            
+            $('#sys_role_permission_tree').tree({
+                data: resData,
+                checkbox: function(node){
+                    if(node.id == resData[0].id){
+                        return false;
+                    }
+                    return true;
+                },
+                cascadeCheck: false,
+                onBeforeCheck: function(node,checked){
+
+                    if(disableCheckEvent){
+                        return true;
+                    }else{
+                        var row = $('#sys_role_permission_role_datagrid').datagrid('getSelected');
+                        if(row == null){
+                            $.messager.alert('Info', 'Please select a role record row!', 'info');
+                            return false;
+                        }
+                        
+                        $.post('http://local.com/api/sys/sys_role_permission/save.json',{checked:checked,rolename: row.rolename, id: node.id},function(data,textStatus,jqXHR){
+                            if(data.success){
+                                return data.success;
+                            } else {
+                                $.messager.show({msg:data.message});
+                                return false;
+                            }
+                        },'json');
+                    }
+
+                },
+                formatter: function(node){
+                    if(node.disabled){
+                        disabledNodes.push(node);
+                    }
+                    return node.text;
+                }
+            });
+
+            // $('#sys_role_permission_tree').tree('loadData',resData);
+
+        }else{
+            $.messager.show({msg:data.message});
+        }
+    },'json').done(function( data, textStatus, jqXHR ) {
+            
+        $.each(disabledNodes,function(i,e){
+            console.log(e);
+            var node = $('#sys_role_permission_tree').tree('find', e.id);
+            $('#sys_role_permission_tree').tree('remove', node.target);
+        });
+
+    });
+
+});
+
+
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

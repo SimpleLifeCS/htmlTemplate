@@ -1,0 +1,183 @@
+<div id="sys_role_container" style="padding: 10px; margin: 0px;">
+
+    <div id="sys_role_query_form" class="easyui-panel">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Rolename</td>
+                    <td><input class="easyui-textbox" type="text" name="rolename" data-options="fit:true"/></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="fit:true"/></td>
+                    <td>&nbsp;</td>
+                    <td colspan="3">
+                        <a href="javascript:;" class="easyui-linkbutton" 
+                          data-options="iconCls: 'ext-icon fa fa-search fa-lg', width:80, onClick: function(){
+                            var reqData = $('#sys_role_query_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+                            $('#sys_role_datagrid').datagrid('reload',reqData);
+                        }">Query</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="ext-div-line"></div>
+
+    <table id="sys_role_datagrid"></table>
+    <div id="sys_role_datagrid_toolbar">
+        <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addRole()"></a>
+        <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editRole()"></a>
+        <a href="javascript:;" title="Remove" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delRole()"></a>
+        <a href="javascript:;" title="Disable/Enable" id="easyui-linkbutton-disable-toggle-group" id="easyui-linkbutton-disable-toggle-role" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-lock fa-lg',plain:true" onclick="disableToggleRole()"></a>
+        <a href="javascript:;" title="User" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-user fa-lg',plain:true" onclick="roleUsers()"></a>
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-upload fa-lg',plain:true"></a> -->
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-file-excel-o fa-lg',plain:true"></a> -->
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-print fa-lg',plain:true"></a> -->
+    </div>
+
+    <!-- <div class="ext-div-line"></div>
+    <div id="sys_role_tips" class="ext-warning" class="easyui-panel">
+        Tips
+    </div> -->
+
+    <script type="text/javascript">
+
+    // ===================================
+    // datagrid
+    $('#sys_role_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_role/query.json',
+        method: 'get',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 520,
+        striped: true,
+        toolbar: '#sys_role_datagrid_toolbar',
+        onClickRow: function(index,row){
+            var btn = $('#easyui-linkbutton-disable-toggle-role');
+            var btnOptions = btn.linkbutton('options');
+            // console.log(btnOptions);
+            if(row.disabled){
+                btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+            }else{
+                btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+            }
+            btn.linkbutton(btnOptions);
+        },
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'rolename', title: 'Rolename', width: 300 },
+                { field: 'viewname', title: 'Viewname', width: 200 },
+                { field: 'disabled', title: 'Disabled', width: 60}
+            ]
+        ]
+    });
+    /*, formatter: function(value,row,index){
+                    if(value){
+                        return 'Y';
+                    }
+                    return 'N';
+                }*/
+    // ===================================
+
+    function addRole() {
+        // $('#sys_role_add_container').dialog('open');
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', 'sys/role_add.html');
+    }
+
+    function editRole() {
+        var row = $('#sys_role_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+        var url = 'sys/role_edit.html?id='+row.id;
+        localStorage.setItem('sys_role_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function delRole() {
+        var row = $('#sys_role_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#sys_role_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_role_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_role/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#sys_role_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+
+
+    function disableToggleRole(){
+        var row = $('#sys_role_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#sys_role_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_role_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_role/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#sys_role_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+    // ===================================
+
+
+
+    // ===================================
+    // view group users
+    function roleUsers(){
+        var row = $('#sys_role_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a row!', 'info');
+            return false;
+        }
+
+        var url = 'sys/role_user.html?rolename='+row.rolename;
+        localStorage.setItem('sys_role_user_url',url);
+
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+
+    }
+    // ===================================
+
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

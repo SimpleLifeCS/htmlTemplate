@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/gray/easyui.css">
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/common.css">
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-serializejson/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="./js/common.js"></script>
+</head>
+
+<body>
+    <div class="easyui-layout" id="el">
+        <!-- <div data-options="region:'north'" style="height:40px"></div> -->
+        <!-- <div data-options="region:'south',split:true" style="height:50px;"></div> -->
+        <!-- <div data-options="region:'east',split:true" style="width:100px;"></div> -->
+        <div data-options="region:'west',split:true" style="width:240px; padding-left: 10px; padding-top: 10px;" id="west"></div>
+        <div data-options="region:'center',split:true">
+            <div id="tabs" class="easyui-tabs"></div>
+            <!-- <table class="easyui-datagrid"
+                    data-options="url:'datagrid_data1.json',method:'get',border:false,singleSelect:true,fit:true,fitColumns:true">
+                <thead>
+                    <tr>
+                        <th data-options="field:'itemid'" width="80">Item ID</th>
+                        <th data-options="field:'productid'" width="100">Product ID</th>
+                        <th data-options="field:'listprice',align:'right'" width="80">List Price</th>
+                        <th data-options="field:'unitcost',align:'right'" width="80">Unit Cost</th>
+                        <th data-options="field:'attr1'" width="150">Attribute</th>
+                        <th data-options="field:'status',align:'center'" width="60">Status</th>
+                    </tr>
+                </thead>
+            </table> -->
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(function() {
+        $('#el').layout({ fit: true });
+
+
+        $('#tabs').tabs({
+            fit: true,
+        });
+        $('#tabs').tabs('add', { id: 1, title: '仪表盘' });
+
+        // console.log(tabs);
+
+        var menuData = [{
+                id: 10,
+                text: '系统管理',
+                attributes: {},
+                children: [
+                    { id: 1010, text: '用户管理', attributes: { item_code: 'sys:user' } },
+                    { id: 1020, text: '群组管理', attributes: { item_code: 'sys:group' } },
+                    { id: 1030, text: '角色管理', attributes: { item_code: 'sys:role' } },
+                    { id: 1040, text: '权限管理', attributes: { item_code: 'sys:permission' } },
+                    { id: 1050, text: '授权管理', attributes: { item_code: 'sys:role_permission' } }
+                ]
+            },
+            {
+                id: 20,
+                text: '内容管理',
+                attributes: {},
+                children: [
+                    { id: 2010, text: '类别管理', attributes: { item_code: 'cms:category' } },
+                    { id: 2020, text: '附件管理', attributes: { item_code: 'cms:file' } },
+                    { id: 2030, text: '文章管理', attributes: { item_code: 'cms:article' } }
+                ]
+            },
+            {
+                id: 90,
+                text: '个人设置',
+                attributes: {},
+                children: [
+                    { id: 9010, text: '基本信息', attributes: { item_code: 'profile:baseinfo' } },
+                    { id: 9020, text: '安全设置', attributes: { item_code: 'profile:security' } },
+                    { id: 9030, text: '退出系统', attributes: { item_code: 'profile:logout' } }
+                ]
+            },
+        ];
+
+        $('#west').tree({
+            data: menuData,
+            onClick: function(node) {
+                var id = node.id;
+                var exists = false;
+                var tabs = $('#tabs').tabs('tabs');
+                var existsIdx = 0;
+
+                $.each(tabs, function(idx, ele) {
+                    var _id = ele.panel('options').id;
+                    if (id == _id) {
+                        existsIdx = idx;
+                        exists = true;
+                        return false;
+                    }
+                });
+
+                if (exists) {
+                    $('#tabs').tabs('select', existsIdx);
+                } else {
+                    var content = $('<div></div>');
+                    var path = node.attributes.item_code.replace(/:/g, '/');
+
+                    var itemKey = 'tabs-'.concat(id);
+                    var itemValue = './' + path + '.html';
+                    localStorage.setItem(itemKey, itemValue);
+
+                    var panel = { id: id, title: node.text, closable: true, href: itemValue };
+                    $('#tabs').tabs('add', panel);
+
+                }
+            },
+            onBeforeCollapse: function(node) {
+                return false;
+            }
+
+        });
+
+
+        $.ajaxSetup({
+            headers: {
+                user: localStorage.getItem('user'),
+                viewname: localStorage.getItem('viewname'),
+                jwtoken: localStorage.getItem('jwtoken')
+            },
+            complete: function(jqXHR, textStatus){
+                // console.log(jqXHR);
+                if(jqXHR.status == 401){
+                    location.href = 'http://static.local.com/jeasyui/login.html';
+                    return;
+                }
+                if(jqXHR.responseJSON){
+                    // var data = jQuery.parseJSON(jqXHR.responseText);
+                    localStorage.setItem('jwtoken',jqXHR.responseJSON.jwtoken);
+                }
+                // jwtoken
+                // jqXHR.always(function( data|jqXHR, textStatus, jqXHR|errorThrown ) { });
+            }
+        });
+
+
+
+    });
+    </script>
+</body>
+
+</html>

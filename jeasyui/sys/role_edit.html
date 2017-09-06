@@ -1,0 +1,64 @@
+
+    <div id="sys_role_edit_container" style="padding: 10px; margin: 0px;">
+        <form id="sys_role_edit_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Edit Role" data-options="inline: true">
+            <input type="hidden" name="id">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Rolename</td>
+                    <td><input class="easyui-textbox" type="text" name="rolename" data-options="readonly:true,fit:true" /></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="#" id="sys_role_edit_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#sys_role_edit_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var reqData = $('#sys_role_edit_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+            
+            $.post('http://local.com/api/sys/sys_role/update.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });
+
+    $(function(){
+        var url = localStorage.getItem('sys_role_edit_url');
+        var reqData = {id:getParameterByName('id',url)};
+
+        $.get('http://local.com/api/sys/sys_role/get.json',reqData,function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data;
+                $('#sys_role_edit_form').form('load',resData);
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json');
+    });
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

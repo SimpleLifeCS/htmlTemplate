@@ -1,0 +1,47 @@
+
+    <div id="sys_group_add_container" style="padding: 10px; margin: 0px;">
+        <form id="sys_group_add_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add Group" data-options="inline: true">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Groupname</td>
+                    <td><input class="easyui-textbox" type="text" name="groupname" data-options="required:true,fit:true" /></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="#" id="sys_group_add_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#sys_group_add_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var reqData = $('#sys_group_add_form').serializeJSON();
+
+            $.post('http://local.com/api/sys/sys_group/save.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

@@ -1,0 +1,184 @@
+<div id="sys_group_container" style="padding: 10px; margin: 0px;">
+
+    <div id="sys_group_query_form" class="easyui-panel">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Groupname</td>
+                    <td><input class="easyui-textbox" type="text" name="groupname" data-options="fit:true"/></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="fit:true"/></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" 
+                          data-options="iconCls: 'ext-icon fa fa-search fa-lg', width:80, onClick: function(){
+                            var reqData = $('#sys_group_query_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+                            $('#sys_group_datagrid').datagrid('reload',reqData);
+                        }">Query</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="ext-div-line"></div>
+
+    <table id="sys_group_datagrid"></table>
+    <div id="sys_group_datagrid_toolbar">
+        <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addGroup()"></a>
+        <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editGroup()"></a>
+        <a href="javascript:;" title="Remove" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delGroup()"></a>
+        <a href="javascript:;" title="Disable/Enable" id="easyui-linkbutton-disable-toggle-group" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-lock fa-lg',plain:true" onclick="disableToggleGroup()"></a>
+        <a href="javascript:;" title="User" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-user fa-lg',plain:true" onclick="groupUsers()"></a>
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-upload fa-lg',plain:true"></a> -->
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-file-excel-o fa-lg',plain:true"></a> -->
+        <!-- <a href="#" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-print fa-lg',plain:true"></a> -->
+    </div>
+
+    <!-- <div class="ext-div-line"></div>
+    <div id="sys_group_tips" class="ext-warning" class="easyui-panel">
+        Tips
+    </div> -->
+
+    <script type="text/javascript">
+
+    // ===================================
+    // datagrid
+    $('#sys_group_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_group/query.json',
+        method: 'get',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 520,
+        striped: true,
+        toolbar: '#sys_group_datagrid_toolbar',
+        onClickRow: function(index,row){
+            var btn = $('#easyui-linkbutton-disable-toggle-group');
+            var btnOptions = btn.linkbutton('options');
+            console.log(btnOptions);
+            if(row.disabled){
+                btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+            }else{
+                btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+            }
+            btn.linkbutton(btnOptions);
+        },
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'groupname', title: 'Groupname', width: 100 },
+                { field: 'viewname', title: 'Viewname', width: 200 },
+                { field: 'disabled', title: 'Disabled', width: 60}
+            ]
+        ]
+    });
+    /*, formatter: function(value,row,index){
+                    if(value){
+                        return 'Y';
+                    }
+                    return 'N';
+                }*/
+    // ===================================
+
+    function addGroup() {
+        // $('#sys_group_add_container').dialog('open');
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', 'sys/group_add.html');
+    }
+
+    function editGroup() {
+        var row = $('#sys_group_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+        var url = 'sys/group_edit.html?id='+row.id;
+        localStorage.setItem('sys_group_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function delGroup() {
+        var row = $('#sys_group_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#sys_group_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_group_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_group/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#sys_group_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+
+
+    function disableToggleGroup(){
+        var row = $('#sys_group_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#sys_group_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_group_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_group/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#sys_group_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+    // ===================================
+
+
+
+    // ===================================
+    // view group users
+    function groupUsers(){
+        var row = $('#sys_group_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a row!', 'info');
+            return false;
+        }
+
+        var url = 'sys/group_user.html?groupname='+row.groupname;
+        localStorage.setItem('sys_group_user_url',url);
+
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+
+    }
+    // ===================================
+
+
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

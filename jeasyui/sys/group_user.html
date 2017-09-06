@@ -1,0 +1,57 @@
+<div id="sys_group_user_container" style="padding: 10px; margin: 0px;">
+
+        <div id="sys_group_user_back" class="easyui-panel">
+            <table class="ext-data-table">
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    
+    <div class="ext-div-line"></div>
+
+    <table id="sys_group_user_datagrid"></table>
+
+    <!-- <div class="ext-div-line"></div>
+    <div id="sys_group_user_tips" class="ext-warning" class="easyui-panel">
+        Tips
+    </div> -->
+
+    <script type="text/javascript">
+        var url = localStorage.getItem('sys_group_user_url');
+        var globalQueryParams = {groupname:getParameterByName('groupname',url)};
+
+    // ===================================
+    // datagrid
+    $('#sys_group_user_datagrid').datagrid({
+        url: 'http://local.com/api/sys/sys_group_user/query.json',
+        method: 'get',
+        queryParams: globalQueryParams,
+        cls: 'ext-datagrid-float-left',
+        width: 450,
+        pagination: false,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 520,
+        striped: true,
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'username', title: 'Username', width: 200 },
+                { field: 'viewname', title: 'Viewname', width: 200 }
+            ]
+        ]
+    });
+
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

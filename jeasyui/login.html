@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/gray/easyui.css">
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="http://res.local.com/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/common.css">
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="http://res.local.com/jquery-serializejson/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="./js/common.js"></script>
+</head>
+
+<body>
+    <div id="user_login_container" style="width:500px; float: right; padding: 200px 100px 0px 0px; margin: 0px;">
+        <form id="user_login_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="User Login" data-options="inline: true">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Username</td>
+                    <td>
+                        <input class="easyui-textbox" type="text" name="username" value="admin" data-options="required:true,fit:true" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td>
+                        <input class="easyui-textbox" type="text" name="password" value="12345678" data-options="required:true,fit:true" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" title="User Login" id="user_login_form_login_btn">Login</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <script type="text/javascript" src="http://res.local.com/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        $('#user_login_form_login_btn').linkbutton({
+            iconCls: 'ext-icon fa fa-sign-in fa-lg',
+            width: 80,
+            onClick: function() {
+                var reqData = $('#user_login_form').serializeJSON();
+                reqData.password = CryptoJS.MD5(reqData.username.concat('@').concat(reqData.password)).toString();
+
+                $.post('http://local.com/api/login.json', reqData, function(data, textStatus, jqXHR) {
+                    if (data.success) {
+                        localStorage.setItem('user', reqData.username);
+                        // localStorage.setItem('viewname', data.data.viewname);
+                        localStorage.setItem('jwtoken', data.data.jwtoken);
+
+                        // location.href = 'http://static.local.com/jeasyui/index.html';
+
+                    } else {
+                        $.messager.show({ msg: data.message });
+                    }
+                }, 'json').always(function(data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+                    console.log(data_or_jqXHR, textStatus, jqXHR_or_errorThrown);
+                    if (textStatus == 'success') {
+                        // data,stextStatus,jqXHR
+                        location.href = 'http://static.local.com/jeasyui/index.html';
+                    } else if (textStatus == 'error') {
+                        // jqXHR,stextStatus,errorThrown
+                        $.messager.show({ msg: data_or_jqXHR.responseJSON.message });
+                    }
+                });
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+
+    <div id="sys_user_edit_container" style="padding: 10px; margin: 0px;">
+        <form id="sys_user_edit_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Edit User" data-options="inline: true">
+            <input type="hidden" name="id">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Email</td>
+                    <td><input class="easyui-textbox" type="text" name="email" data-options="readonly:true,fit:true" /></td>
+                    <td>Username</td>
+                    <td><input class="easyui-textbox" type="text" name="username" data-options="readonly:true,fit:true" /></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td><input class="easyui-textbox" type="text" name="password" data-options="fit:true" /></td>
+                    <td>Group</td>
+                    <td><input type="text" id="sys_user_edit_form_groupname" name="groupname"/></td>
+                    <td>Role</td>
+                    <td><input type="text" id="sys_user_edit_form_rolename" name="rolename"/></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <a href="#" id="sys_user_edit_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript" src="http://res.local.com/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#sys_user_edit_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var reqData = $('#sys_user_edit_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+
+            if(reqData.password){
+                reqData.password = CryptoJS.MD5(reqData.username.concat('@').concat(reqData.password)).toString();
+            }
+            $.post('http://local.com/api/sys/sys_user/update.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });
+
+    $(function(){
+        var url = localStorage.getItem('sys_user_edit_url');
+        var reqData = {id:getParameterByName('id',url)};
+
+        $.get('http://local.com/api/sys/sys_user/get.json',reqData,function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data;
+                resData.password = '';
+                $('#sys_user_edit_form').form('load',resData);
+
+
+
+                $('#sys_user_edit_form_groupname').combobox({
+                    required: true,
+                    editable: false,
+                    fit: true,
+                    url: 'http://local.com/api/sys/sys_group/query_all.json',
+                    method: 'get',
+                    valueField: 'groupname',
+                    textField: 'viewname',
+                    value: resData.groupname,
+                    loadFilter: function(data){
+                        return data.data;
+                    }
+                });
+
+                $('#sys_user_edit_form_rolename').combobox({
+                    required: true,
+                    editable: false,
+                    fit: true,
+                    url: 'http://local.com/api/sys/sys_role/query_all.json',
+                    method: 'get',
+                    valueField: 'rolename',
+                    textField: 'viewname',
+                    value: resData.rolename,
+                    loadFilter: function(data){
+                        return data.data;
+                    }
+                });
+
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json');
+    });
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>

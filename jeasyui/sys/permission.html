@@ -1,0 +1,202 @@
+<div style="padding: 10px; margin: 0px;">
+
+<div class="easyui-panel" style="width: 200px; height: 660px; padding: 10px;" data-options="cls: 'ext-datagrid-float-left'">
+    <div id="sys_permission_tree"></div>
+</div>
+
+<table id="sys_permission_datagrid"></table>
+<div id="sys_permission_datagrid_toolbar">
+    <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addPermission()"></a>
+    <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editPermission()"></a>
+    <a href="javascript:;" title="Remove" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delPermission()"></a>
+    <a href="javascript:;" title="Disable/Enable" id="easyui-linkbutton-disable-toggle-permission" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-lock fa-lg',plain:true" onclick="disableTogglePermission()"></a>
+</div>
+
+    <script type="text/javascript">
+
+    $(function(){
+
+        var disabledNodeIds = [];
+
+        $.get('http://local.com/api/sys/sys_permission/query_tree.json',{},function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data;
+                
+                $('#sys_permission_tree').tree({
+                    data: resData,
+                    onClick: function(node){
+                        if(node.disabled){
+                            return false;
+                        }
+                        localStorage.setItem('sys_permission_tree_current_node_id',node.id);
+                        $('#sys_permission_datagrid').datagrid('reload',{id:node.id});
+                    },
+                    formatter: function(node){
+                        if(node.disabled){
+                            disabledNodeIds.push(node.id);
+                            console.log(node);
+                        }
+                        return node.text;
+                    }
+                });
+
+                // $('#sys_permission_tree').tree('loadData',resData);
+
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json').done(function( data, textStatus, jqXHR ) {
+            
+            var currentQueryId = localStorage.getItem('sys_permission_tree_current_node_id');
+            if(currentQueryId == null){
+                var treeRootNode = $('#sys_permission_tree').tree('getRoot');
+                currentQueryId = treeRootNode.id;
+                $('#sys_permission_tree').tree('select', treeRootNode.target);
+            }else{
+                var node = $('#sys_permission_tree').tree('find', currentQueryId);
+                currentQueryId = node.id;
+                $('#sys_permission_tree').tree('select', node.target);
+            }
+
+            $.each(disabledNodeIds,function(i,e){
+                var disabledNode = $('#sys_permission_tree').tree('find', e);
+                $(disabledNode.target).addClass('ext-tree-node-disabled');
+            });
+
+            // ===================================
+            // datagrid
+            $('#sys_permission_datagrid').datagrid({
+                url: 'http://local.com/api/sys/sys_permission/query.json',
+                method: 'get',
+                queryParams: {id: currentQueryId},
+                cls: 'ext-datagrid-float-left',
+                pagination: true,
+                singleSelect: true,
+                rownumbers: true,
+                minHeight: 660,
+                minWidth: 800,
+                striped: true,
+                toolbar: '#sys_permission_datagrid_toolbar',
+                onClickRow: function(index,row){
+                    var btn = $('#easyui-linkbutton-disable-toggle-permission');
+                    var btnOptions = btn.linkbutton('options');
+                    // console.log(btnOptions);
+                    if(row.disabled){
+                        btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+                    }else{
+                        btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+                    }
+                    btn.linkbutton(btnOptions);
+                },
+                loadFilter: function(data){
+                    return data.data;
+                },
+                columns: [
+                    [
+                        { field: 'permissionCode', title: 'Code', width: 200 },
+                        { field: 'viewname', title: 'Viewname', width: 200 },
+                        { field: 'permissionContent', title: 'Content', width: 300 },
+                        { field: 'disabled', title: 'Disabled', width: 60}
+                    ]
+                ]
+            });
+
+        });
+    });
+
+
+    function addPermission(){
+        var node = $('#sys_permission_tree').tree('getSelected');
+        if(node == null){
+            $.messager.alert('Info', 'Please select a parent node!', 'info');
+            return false;
+        }
+        var url = 'sys/permission_add.html?pid='+node.id;
+        localStorage.setItem('sys_permission_add_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function editPermission() {
+        var row = $('#sys_permission_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+        var url = 'sys/permission_edit.html?id='+row.id;
+        localStorage.setItem('sys_permission_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function delPermission() {
+        var row = $('#sys_permission_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#sys_permission_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_permission_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_permission/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        var node = $('#sys_permission_tree').tree('find', row.id);
+                        $('#sys_permission_tree').tree('remove', node.target);
+
+                        $('#sys_permission_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+
+                
+            }
+        });
+    }
+
+
+    function disableTogglePermission(){
+        var row = $('#sys_permission_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#sys_permission_datagrid').datagrid('getRowIndex', row);
+                // $('#sys_permission_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/sys/sys_permission/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        var node = $('#sys_permission_tree').tree('find', row.id);
+                        if(row.disabled == false){
+                            $(node.target).addClass('ext-tree-node-disabled');
+                        } else {
+                            $(node.target).removeClass('ext-tree-node-disabled');
+                        }
+                        /*$('#sys_permission_tree').tree('update', {
+                            target: node.target,
+                            iconCls: 'ext-tree-node-disabled'
+                        });*/
+                        $('#sys_permission_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+    // ===================================
+
+
+    </script>
+
+</div>

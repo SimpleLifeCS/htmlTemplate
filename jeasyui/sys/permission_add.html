@@ -1,0 +1,56 @@
+
+    <div id="sys_permission_add_container" style="padding: 10px; margin: 0px;">
+        <form id="sys_permission_add_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add Permission" data-options="inline: true">
+            <input type="hidden" name="pid">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Code</td>
+                    <td><input class="easyui-textbox" type="text" name="permissionCode" data-options="required:true,fit:true" /></td>
+                    <td>Name</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>Content</td>
+                    <td colspan="3" height="120"><input class="easyui-textbox" type="text" name="permissionContent" data-options="required:true,fit:true,multiline:true" /></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <a href="#" id="sys_permission_add_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#sys_permission_add_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var url = localStorage.getItem('sys_permission_add_url');
+            var reqData = $('#sys_permission_add_form').serializeJSON();
+            reqData.pid = getParameterByName('pid',url);
+
+            $.post('http://local.com/api/sys/sys_permission/save.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });    
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>
