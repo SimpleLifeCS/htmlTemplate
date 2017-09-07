@@ -23,3 +23,15 @@ if ($.fn.datagrid){
     $.fn.datagrid.defaults.emptyMsg = '查询无数据集合';
     $.fn.datagrid.defaults.pageSize = 20;
 }
+
+
+
+/*
+UUID.generate();
+
+$('#PATH_SELECTOR').find(':input')
+.filter(function () {
+    return $.trim(this.value).length > 0
+})
+.serializeJSON();
+*/
