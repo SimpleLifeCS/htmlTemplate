@@ -1,0 +1,202 @@
+<div style="padding: 10px; margin: 0px;">
+
+<div class="easyui-panel" style="width: 200px; height: 660px; padding: 10px;" data-options="cls: 'ext-datagrid-float-left'">
+    <div id="cms_category_tree"></div>
+</div>
+
+<table id="cms_category_datagrid"></table>
+<div id="cms_category_datagrid_toolbar">
+    <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addCategory()"></a>
+    <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editCategory()"></a>
+    <a href="javascript:;" title="Remove" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delCategory()"></a>
+    <a href="javascript:;" title="Disable/Enable" id="easyui-linkbutton-disable-toggle-permission" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-lock fa-lg',plain:true" onclick="disableToggleCategory()"></a>
+</div>
+
+    <script type="text/javascript">
+
+    $(function(){
+
+        var disabledNodeIds = [];
+
+        $.get('http://local.com/api/cms/category/query_tree.json',{},function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data;
+                
+                $('#cms_category_tree').tree({
+                    data: resData,
+                    onClick: function(node){
+                        if(node.disabled){
+                            return false;
+                        }
+                        localStorage.setItem('cms_category_tree_current_node_id',node.id);
+                        $('#cms_category_datagrid').datagrid('reload',{id:node.id});
+                    },
+                    formatter: function(node){
+                        if(node.disabled){
+                            disabledNodeIds.push(node.id);
+                            // console.log(node);
+                        }
+                        return node.text;
+                    }
+                });
+
+                // $('#cms_category_tree').tree('loadData',resData);
+
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json').done(function( data, textStatus, jqXHR ) {
+            
+            var currentQueryId = localStorage.getItem('cms_category_tree_current_node_id');
+            if(currentQueryId == null){
+                var treeRootNode = $('#cms_category_tree').tree('getRoot');
+                currentQueryId = treeRootNode.id;
+                $('#cms_category_tree').tree('select', treeRootNode.target);
+            }else{
+                var node = $('#cms_category_tree').tree('find', currentQueryId);
+                currentQueryId = node.id;
+                $('#cms_category_tree').tree('select', node.target);
+            }
+
+            $.each(disabledNodeIds,function(i,e){
+                var disabledNode = $('#cms_category_tree').tree('find', e);
+                $(disabledNode.target).addClass('ext-tree-node-disabled');
+            });
+
+            // ===================================
+            // datagrid
+            $('#cms_category_datagrid').datagrid({
+                url: 'http://local.com/api/cms/category/query.json',
+                method: 'get',
+                queryParams: {id: currentQueryId},
+                cls: 'ext-datagrid-float-left',
+                pagination: true,
+                singleSelect: true,
+                rownumbers: true,
+                minHeight: 660,
+                minWidth: 800,
+                striped: true,
+                toolbar: '#cms_category_datagrid_toolbar',
+                onClickRow: function(index,row){
+                    var btn = $('#easyui-linkbutton-disable-toggle-permission');
+                    var btnOptions = btn.linkbutton('options');
+                    // console.log(btnOptions);
+                    if(row.disabled){
+                        btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+                    }else{
+                        btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+                    }
+                    btn.linkbutton(btnOptions);
+                },
+                loadFilter: function(data){
+                    return data.data;
+                },
+                columns: [
+                    [
+                        { field: 'nodename', title: 'Nodename', width: 200 },
+                        { field: 'viewname', title: 'Viewname', width: 200 },
+                        { field: 'nodeLink', title: 'Link', width: 300 },
+                        { field: 'disabled', title: 'Disabled', width: 60}
+                    ]
+                ]
+            });
+
+        });
+    });
+
+
+    function addCategory(){
+        var node = $('#cms_category_tree').tree('getSelected');
+        if(node == null){
+            $.messager.alert('Info', 'Please select a parent node!', 'info');
+            return false;
+        }
+        var url = 'cms/category_add.html?parentId='+node.id;
+        localStorage.setItem('cms_category_add_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function editCategory() {
+        var row = $('#cms_category_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+        var url = 'cms/category_edit.html?id='+row.id;
+        localStorage.setItem('cms_category_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function delCategory() {
+        var row = $('#cms_category_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#cms_category_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_category_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/category/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        var node = $('#cms_category_tree').tree('find', row.id);
+                        $('#cms_category_tree').tree('remove', node.target);
+
+                        $('#cms_category_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+
+                
+            }
+        });
+    }
+
+
+    function disableToggleCategory(){
+        var row = $('#cms_category_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#cms_category_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_category_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/category/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        var node = $('#cms_category_tree').tree('find', row.id);
+                        if(row.disabled == false){
+                            $(node.target).addClass('ext-tree-node-disabled');
+                        } else {
+                            $(node.target).removeClass('ext-tree-node-disabled');
+                        }
+                        /*$('#cms_category_tree').tree('update', {
+                            target: node.target,
+                            iconCls: 'ext-tree-node-disabled'
+                        });*/
+                        $('#cms_category_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }
+    // ===================================
+
+
+    </script>
+
+</div>

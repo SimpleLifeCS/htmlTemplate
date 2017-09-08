@@ -1,0 +1,59 @@
+
+    <div id="cms_category_add_container" style="padding: 10px; margin: 0px;">
+        <form id="cms_category_add_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add Permission" data-options="inline: true">
+            <input type="hidden" name="pid">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Nodename</td>
+                    <td><input class="easyui-textbox" type="text" name="nodename" data-options="required:true,fit:true" /></td>
+                    <td>Viewname</td>
+                    <td><input class="easyui-textbox" type="text" name="viewname" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>Link</td>
+                    <td><input class="easyui-textbox" type="text" name="nodeLink" data-options="fit:true" /></td>
+                    <td>State</td>
+                    <td><input class="easyui-textbox" type="text" name="state" data-options="required:true,fit:true,value:'1'" /></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <a href="#" id="cms_category_add_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+    // ===================================
+    // save, 
+    // TODO node state process
+    $('#cms_category_add_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var url = localStorage.getItem('cms_category_add_url');
+            var reqData = $('#cms_category_add_form').serializeJSON();
+            reqData.parentId = getParameterByName('parentId',url);
+
+            $.post('http://local.com/api/cms/category/save.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });    
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>
