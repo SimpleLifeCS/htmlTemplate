@@ -1,0 +1,213 @@
+<div style="padding: 10px; margin: 0px;">
+
+<div class="easyui-panel" style="width: 200px; height: 660px; padding: 10px;" data-options="cls: 'ext-datagrid-float-left'">
+    <div id="cms_article_category_tree"></div>
+</div>
+
+    <div id="cms_article_query_form" class="easyui-panel" data-options="maxWidth:860">
+        <input type="hidden" name="categoryId" id="cms_article_query_form_categoryId">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Title</td>
+                    <td><input type="text" id="cms_article_query_form_title" class="easyui-textbox" name="title" data-options="fit:true"/></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" 
+                          data-options="iconCls: 'ext-icon fa fa-search fa-lg', width:80, onClick: function(){
+                            var reqData = $('#cms_article_query_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+                            $('#cms_article_datagrid').datagrid('reload',reqData);
+                        }">Query</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="ext-div-line"></div>
+
+<table id="cms_article_datagrid"></table>
+<div id="cms_article_datagrid_toolbar">
+    <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addArticle()"></a>
+    <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editArticle()"></a>
+    <a href="javascript:;" title="Remove" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-trash-o fa-lg',plain:true" onclick="delArticle()"></a>
+    <!-- <a href="javascript:;" title="Disable/Enable" id="easyui-linkbutton-disable-toggle-permission" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-lock fa-lg',plain:true" onclick="disableToggleArticle()"></a> -->
+</div>
+
+    <script type="text/javascript">
+
+    $(function(){
+
+        $.get('http://local.com/api/cms/category/query_tree.json',{skipDisabled:true},function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data[0].children;
+                
+                $('#cms_article_category_tree').tree({
+                    data: resData,
+                    onClick: function(node){
+                        localStorage.setItem('cms_article_category_tree_current_node_id',node.id);
+                        $('#cms_article_query_form_categoryId').val(node.id);
+                        var title = $('#cms_article_query_form_title').val();
+                        $('#cms_article_datagrid').datagrid('reload',{categoryId:node.id,title:title});
+                    },
+                    formatter: function(node){
+                        return node.text;
+                    }
+                });
+
+                // $('#cms_article_category_tree').tree('loadData',resData);
+
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json').done(function( data, textStatus, jqXHR ) {
+            var reqData = {};
+            var currentQueryId = localStorage.getItem('cms_article_category_tree_current_node_id');
+            if(currentQueryId == null){
+                var treeRootNode = $('#cms_article_category_tree').tree('getRoot');
+                currentQueryId = treeRootNode.id;
+                $('#cms_article_category_tree').tree('select', treeRootNode.target);
+            } else {
+                var node = $('#cms_article_category_tree').tree('find', currentQueryId);
+                currentQueryId = node.id;
+                $('#cms_article_category_tree').tree('select', node.target);
+
+                reqData.categoryId = currentQueryId;
+            }
+
+            // ===================================
+            // datagrid
+            $('#cms_article_datagrid').datagrid({
+                url: 'http://local.com/api/cms/article/query.json',
+                method: 'get',
+                queryParams: reqData,
+                cls: 'ext-datagrid-float-left',
+                pagination: true,
+                singleSelect: true,
+                rownumbers: true,
+                minHeight: 614,
+                minWidth: 860,
+                striped: true,
+                toolbar: '#cms_article_datagrid_toolbar',
+                onClickRow: function(index,row){
+                    var btn = $('#easyui-linkbutton-disable-toggle-permission');
+                    var btnOptions = btn.linkbutton('options');
+                    // console.log(btnOptions);
+                    if(row.disabled){
+                        btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+                    }else{
+                        btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+                    }
+                    btn.linkbutton(btnOptions);
+                },
+                loadFilter: function(data){
+                    return data.data;
+                },
+                columns: [
+                    [
+                        { field: 'title', title: 'Title', width: 400 },
+                        { field: 'pubDate', title: 'Date', width: 200 },
+                        { field: 'articleEditor', title: 'Author', width: 100},
+                        { field: 'state', title: 'isPub', width: 60, formatter:function(value,row,index){
+                            if((parseInt(value) & 1) == 1){
+                                return true;
+                            }
+                            return false;
+                        }}
+                    ]
+                ]
+            });
+
+        });
+    });
+
+
+    function addArticle(){
+        var node = $('#cms_article_category_tree').tree('getSelected');
+        if(node == null){
+            $.messager.alert('Info', 'Please select a parent node!', 'info');
+            return false;
+        }
+        var url = 'cms/article_add.html?parentId=0&categoryId='+node.id+'&categoryText='+node.text;
+        localStorage.setItem('cms_article_add_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function editArticle() {
+        var row = $('#cms_article_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+
+        var node = $('#cms_article_category_tree').tree('getSelected');
+        if(node == null){
+            $.messager.alert('Info', 'Please select a parent node!', 'info');
+            return false;
+        }
+
+        var url = 'cms/article_edit.html?id='+row.id+'&categoryText='+node.text;
+        localStorage.setItem('cms_article_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function delArticle() {
+        var row = $('#cms_article_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#cms_article_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_article_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/article/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#cms_article_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+
+                
+            }
+        });
+    }
+
+
+    /*function disableToggleArticle(){
+        var row = $('#cms_article_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#cms_article_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_article_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/article/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#cms_article_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }*/
+    // ===================================
+
+
+    </script>
+
+</div>
