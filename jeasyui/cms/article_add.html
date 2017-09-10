@@ -25,7 +25,11 @@
                 </tr>
                 <tr>
                     <td>richContent</td>
-                    <td colspan="3" height="300"><input class="easyui-textbox" type="text" name="richContent" data-options="fit:true,multiline:true"/></td>
+                    <td colspan="3" height="300">
+                    <!-- <input class="easyui-textbox" type="text" name="richContent" data-options="fit:true,multiline:true"/> -->
+                    <textarea class="ext-tinymce-rich-content" id="cms_artile_add_form_richContent" name="richContent"></textarea>
+
+                    </td>
                 </tr>
                 <tr>
                     <td>PubDate</td>
@@ -44,7 +48,6 @@
         </form>
     </div>
 
-
     <script type="text/javascript">
     // ===================================
     // save, 
@@ -55,7 +58,9 @@
         onClick: function(){
             var url = localStorage.getItem('cms_article_add_url');
             var reqData = $('#cms_article_add_form').serializeJSON();
-            
+            reqData.richContent = $('#cms_artile_add_form_richContent').tinymce().getContent();
+
+            // console.log(reqData); return;
             $.post('http://local.com/api/cms/article/save.json',reqData,function(data,textStatus,jqXHR){
                 if(data.success){
                     tabBack();
@@ -68,6 +73,8 @@
 
 
     $(function(){
+        initRichContent('#cms_artile_add_form_richContent');
+
         var url = localStorage.getItem('cms_article_add_url');
         var categoryText = getParameterByName('categoryText',url);
         var parentId = getParameterByName('parentId',url);
@@ -75,6 +82,7 @@
         $('#cms_artile_add_form_category_name').html(categoryText);
         $('#cms_artile_add_form_parentId').val(parentId);
         $('#cms_artile_add_form_categoryId').val(categoryId);
+
     });
 
     // ===================================

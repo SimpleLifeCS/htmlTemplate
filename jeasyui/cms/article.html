@@ -90,15 +90,15 @@
                 striped: true,
                 toolbar: '#cms_article_datagrid_toolbar',
                 onClickRow: function(index,row){
-                    var btn = $('#easyui-linkbutton-disable-toggle-permission');
-                    var btnOptions = btn.linkbutton('options');
-                    // console.log(btnOptions);
-                    if(row.disabled){
-                        btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
-                    }else{
-                        btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
-                    }
-                    btn.linkbutton(btnOptions);
+                    // var btn = $('#easyui-linkbutton-disable-toggle-permission');
+                    // var btnOptions = btn.linkbutton('options');
+                    // // console.log(btnOptions);
+                    // if(row.disabled){
+                    //     btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+                    // }else{
+                    //     btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+                    // }
+                    // btn.linkbutton(btnOptions);
                 },
                 loadFilter: function(data){
                     return data.data;

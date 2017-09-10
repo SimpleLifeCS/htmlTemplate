@@ -49,3 +49,8 @@
     color: #404040;
     background: #FFFFFF;
 }
+
+
+.ext-tinymce-rich-content {
+    height: 280px;
+}

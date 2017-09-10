@@ -25,7 +25,9 @@
                 </tr>
                 <tr>
                     <td>richContent</td>
-                    <td colspan="3" height="300"><input class="easyui-textbox" type="text" name="richContent" data-options="fit:true,multiline:true"/></td>
+                    <td colspan="3" height="300">
+                    <div class="ext-tinymce-rich-content" id="cms_artile_edit_form_richContent" name="richContent"></div>
+                    </td>
                 </tr>
                 <tr>
                     <td>PubDate</td>
@@ -56,6 +58,8 @@
                                 return $.trim(this.value).length > 0
                             }).serializeJSON();
 
+            reqData.richContent = $('#cms_artile_edit_form_richContent').tinymce().getContent();
+
             $.post('http://local.com/api/cms/article/update.json',reqData,function(data,textStatus,jqXHR){
                 if(data.success){
                     tabBack();
@@ -67,10 +71,11 @@
     });
 
     $(function(){
+
         var url = localStorage.getItem('cms_article_edit_url');
         var categoryText = getParameterByName('categoryText',url);
         $('#cms_artile_add_form_category_name').html(categoryText);
-        
+
         var reqData = {id:getParameterByName('id',url)};
 
         $.get('http://local.com/api/cms/article/get.json',reqData,function(data,textStatus,jqXHR){
@@ -78,10 +83,12 @@
                 var resData = data.data;
                 $('#cms_article_edit_form').form('load',resData);
 
+                initRichContent('#cms_artile_edit_form_richContent',resData.richContent);
             }else{
                 $.messager.show({msg:data.message});
             }
         },'json');
+
     });
 
     // ===================================
