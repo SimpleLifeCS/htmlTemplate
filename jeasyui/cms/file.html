@@ -1,0 +1,84 @@
+<div style="padding: 10px; margin: 0px;">
+
+    <div id="cms_file_query_form" class="easyui-panel" data-options="maxWidth:860">
+        <input type="hidden" name="categoryId" id="cms_file_query_form_categoryId">
+            <table class="ext-data-table">
+                <tr>
+                    <td>Name</td>
+                    <td><input type="text" class="easyui-textbox" name="originalFileName" data-options="fit:true"/></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" 
+                          data-options="iconCls: 'ext-icon fa fa-search fa-lg', width:80, onClick: function(){
+                            var reqData = $('#cms_file_query_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+                            $('#cms_file_datagrid').datagrid('reload',reqData);
+                        }">Query</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="ext-div-line"></div>
+
+<table id="cms_file_datagrid"></table>
+
+<div id="cms_file_datagrid_toolbar">
+    <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-upload fa-lg',plain:true" onclick="addFile()"></a>
+</div>
+
+    <script type="text/javascript">
+
+    // ===================================
+    // datagrid
+    $('#cms_file_datagrid').datagrid({
+        url: 'http://local.com/api/cms/file/query.json',
+        method: 'get',
+        queryParams: {},
+        cls: 'ext-datagrid-float-left',
+        pagination: true,
+        singleSelect: true,
+        rownumbers: true,
+        minHeight: 614,
+        minWidth: 860,
+        striped: true,
+        toolbar: '#cms_file_datagrid_toolbar',
+        onClickRow: function(index,row){
+            // var btn = $('#easyui-linkbutton-disable-toggle-permission');
+            // var btnOptions = btn.linkbutton('options');
+            // // console.log(btnOptions);
+            // if(row.disabled){
+            //     btnOptions.iconCls = 'ext-icon fa fa-unlock fa-lg';
+            // }else{
+            //     btnOptions.iconCls = 'ext-icon fa fa-lock fa-lg';
+            // }
+            // btn.linkbutton(btnOptions);
+        },
+        loadFilter: function(data){
+            return data.data;
+        },
+        columns: [
+            [
+                { field: 'originalFileName', title: 'Name', width: 400 },
+                { field: 'fileType', title: 'Type', width: 200 },
+                { field: 'fileSize', title: 'Size', width: 60, formatter:function(value,row,index){
+                    return filesize(parseInt(value));
+                }}
+            ]
+        ]
+    });
+
+
+    function addFile(){
+        var url = 'cms/file_add.html';
+        localStorage.setItem('cms_file_add_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+
+    </script>
+
+</div>

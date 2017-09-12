@@ -7,14 +7,27 @@
     <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/gray/easyui.css">
     <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/icon.css">
     <link rel="stylesheet" type="text/css" href="http://res.local.com/font-awesome/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="http://res.local.com/blueimp-file-upload/css/jquery.fileupload.css"> -->
     <link rel="stylesheet" type="text/css" href="./css/common.css">
+    
     <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.min.js"></script>
     <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.easyui.min.js"></script>
     <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/locale/easyui-lang-zh_CN.js"></script>
     <script type="text/javascript" src="http://res.local.com/jquery-serializejson/jquery.serializejson.min.js"></script>
     <script type="text/javascript" src="http://res.local.com/UUID.js/dist/uuid.core.js"></script>
+
     <script type="text/javascript" src="http://res.local.com/tinymce/tinymce.min.js"></script>
     <script type="text/javascript" src="http://res.local.com/tinymce/jquery.tinymce.min.js"></script>
+
+    <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+    <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/jquery.fileupload.js"></script>
+    <!-- <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/jquery.fileupload-ui.js"></script>
+    <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/jquery.fileupload-process.js"></script>
+    <script type="text/javascript" src="http://res.local.com/blueimp-file-upload/js/jquery.fileupload-validate.js"></script> -->
+    
+    <script type="text/javascript" src="http://res.local.com/filesize/lib/filesize.js"></script>
+
     <script type="text/javascript" src="./js/common.js"></script>
 
 </head>
@@ -143,6 +156,9 @@
                 if(jqXHR.responseJSON){
                     // var data = jQuery.parseJSON(jqXHR.responseText);
                     localStorage.setItem('jwtoken',jqXHR.responseJSON.jwtoken);
+                    if(jqXHR.responseJSON.success == false){
+                        $.messager.show({ msg: jqXHR.responseJSON.message });
+                    }
                 }
                 // jwtoken
                 // jqXHR.always(function( data|jqXHR, textStatus, jqXHR|errorThrown ) { });

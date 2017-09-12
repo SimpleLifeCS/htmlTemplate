@@ -1,0 +1,103 @@
+    <div id="cms_file_add_container" style="padding: 10px; margin: 0px;">
+        <form id="cms_file_add_form" enctype="multipart/form-data" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add Permission" data-options="inline: true" action="#">
+            <!-- <input type="hidden" id="cms_file_add_form_owner" name="owner"> -->
+            <table class="ext-data-table">
+                <tr>
+                    <td>File</td><!-- class="easyui-filebox" -->
+                    <td colspan="3"><input id="cms_file_add_form_files" type="file" name="files" multiple></td>
+                </tr>
+                <tr>
+                    <td>Allow</td><!-- class="easyui-filebox" -->
+                    <td colspan="3">
+                        jpg, jpeg, png, xls, xlsx, doc, docx, ppt, pptx, pdf, zip, rar
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <!-- <a href="#" id="cms_file_add_form_save_btn">Save</a> -->
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+
+    <script type="text/javascript">
+    $(function () {
+        $('#cms_file_add_form_files').fileupload({
+            url: 'http://local.com/api/cms/file/save.json',
+            dataType: 'json',
+            formData: {owner: localStorage.getItem('user')},
+            singleFileUploads: false,
+            limitMultiFileUploads: 5,
+            sequentialUploads: true,
+            /*maxFileSize: 5242880,
+            maxNumberOfFiles: 5,
+            autoUpload: true,
+            acceptFileTypes: /(\.|\/)(jpe?g|png|docx?|xlsx?|pptx?|pdf|zip|rar)$/i,*/
+            done: function (e, data) {
+                if(data.textStatus == 'success'){
+                    tabBack();
+                }
+                // $.each(data.result.files, function (index, file) {
+                //     $('<p/>').text(file.name).appendTo(document.body);
+                // });
+            }
+        });
+    });
+
+    // var accepts = ['jpg','jpeg','png','xls','xlsx','doc','docx','ppt','pptx','pdf','zip','rar'];
+    // $('#cms_file_add_form_files').filebox({
+    //     required: true,
+    //     fit: true,
+    //     multiple: true,
+    //     onChange: function(newValue,oldValue){
+    //         if(newValue){
+    //             var filenames = newValue.split(',');
+    //             $.each(filenames,function(i,e){
+    //                 var ext = e.split('.').pop().toLowerCase();
+    //                 if($.inArray(ext,accepts) == -1){
+    //                     $('#cms_file_add_form_files').filebox('reset');
+    //                     return false;
+    //                 }
+    //             });
+    //         }
+    //     }
+    // });
+
+    // ===================================
+    // save, 
+    // TODO node state process
+    // $('#cms_file_add_form_save_btn').linkbutton({
+    //     iconCls: 'ext-icon fa fa-upload fa-lg',
+    //     width: 80,
+    //     onClick: function(){
+    //         $('#cms_file_add_form').form('submit',{
+    //             url: 'http://local.com/api/cms/file/save.json',
+    //             iframe: false,
+    //             success: function(data){
+    //                 console.log(data);
+    //             }
+    //         });
+    //     }
+    // });
+
+
+
+    
+
+    // $(function(){
+    //     $('#cms_file_add_form_owner').val(localStorage.getItem('user'));
+    // });
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>
