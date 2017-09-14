@@ -26,6 +26,7 @@
 
 <div id="cms_file_datagrid_toolbar">
     <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-upload fa-lg',plain:true" onclick="addFile()"></a>
+    <a href="javascript:;" title="Copy" id="cms_file_datagrid_toolbar_copy" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-clipboard fa-lg',plain:true"></a>
 </div>
 
     <script type="text/javascript">
@@ -77,6 +78,18 @@
         var tab = $('#tabs').tabs('getSelected');  // get selected panel
         tab.panel('refresh', url);
     }
+
+    new Clipboard('#cms_file_datagrid_toolbar_copy', {
+        text: function(trigger) {
+            var row = $('#cms_file_datagrid').datagrid('getSelected');
+            if(row == null){
+                $.messager.alert('Info', 'Please select a record row!', 'info');
+                return false;
+            }
+            return 'http://d1.local.com/upload'+row.relativePath+'/'+row.fileName;
+        }
+    });
+
 
 
     </script>

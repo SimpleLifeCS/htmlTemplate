@@ -7,8 +7,6 @@
     <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/gray/easyui.css">
     <link rel="stylesheet" type="text/css" href="http://res.local.com/jquery-easyui-1.5.3/themes/icon.css">
     <link rel="stylesheet" type="text/css" href="http://res.local.com/font-awesome/css/font-awesome.min.css">
-    <!-- <link rel="stylesheet" type="text/css" href="http://res.local.com/blueimp-file-upload/css/jquery.fileupload.css"> -->
-
     <link rel="stylesheet" type="text/css" href="./css/common.css">
     
     <script type="text/javascript" src="http://res.local.com/jquery-easyui-1.5.3/jquery.min.js"></script>
@@ -21,6 +19,7 @@
     <script type="text/javascript" src="http://res.local.com/tinymce/jquery.tinymce.min.js"></script>
 
     <script src="http://res.local.com/plupload/js/plupload.full.min.js"></script>
+    <script src="http://res.local.com/clipboard/dist/clipboard.min.js"></script>
     
     <script type="text/javascript" src="http://res.local.com/filesize/lib/filesize.js"></script>
 
@@ -81,6 +80,7 @@
                 text: '内容管理',
                 attributes: {},
                 children: [
+                    { id: 2010, text: '配置管理', attributes: { item_code: 'cms:config' } },
                     { id: 2010, text: '类别管理', attributes: { item_code: 'cms:category' } },
                     { id: 2020, text: '附件管理', attributes: { item_code: 'cms:file' } },
                     { id: 2030, text: '文章管理', attributes: { item_code: 'cms:article' } }
