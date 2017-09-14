@@ -1,0 +1,144 @@
+<div style="padding: 10px; margin: 0px;">
+
+
+    <div id="cms_config_query_form" class="easyui-panel" data-options="maxWidth:860">
+        <input type="hidden" name="categoryId" id="cms_config_query_form_categoryId">
+            <table class="ext-data-table">
+                <tr>
+                    <td>ConfigLabel</td>
+                    <td><input type="text" id="cms_config_query_form_title" class="easyui-textbox" name="configLabel" data-options="fit:true"/></td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <a href="javascript:;" class="easyui-linkbutton" 
+                          data-options="iconCls: 'ext-icon fa fa-search fa-lg', width:80, onClick: function(){
+                            var reqData = $('#cms_config_query_form').find(':input').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+                            $('#cms_config_datagrid').datagrid('reload',reqData);
+                        }">Query</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="ext-div-line"></div>
+
+<table id="cms_config_datagrid"></table>
+<div id="cms_config_datagrid_toolbar">
+    <!-- <a href="javascript:;" title="Add" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-plus-circle fa-lg',plain:true" onclick="addArticle()"></a> -->
+    <a href="javascript:;" title="Edit" class="easyui-linkbutton" data-options="iconCls:'ext-icon fa fa-pencil fa-lg',plain:true" onclick="editArticle()"></a>
+</div>
+
+    <script type="text/javascript">
+
+    $(function(){
+
+            // ===================================
+            // datagrid
+            $('#cms_config_datagrid').datagrid({
+                url: 'http://local.com/api/cms/config/query.json',
+                method: 'get',
+                queryParams: {},
+                cls: 'ext-datagrid-float-left',
+                pagination: false,
+                singleSelect: true,
+                rownumbers: true,
+                minHeight: 614,
+                minWidth: 860,
+                striped: true,
+                toolbar: '#cms_config_datagrid_toolbar',
+                onClickRow: function(index,row){
+
+                },
+                loadFilter: function(data){
+                    return data.data;
+                },
+                columns: [
+                    [
+                        { field: 'configLabel', title: 'ConfigLabel', width: 400 },
+                        { field: 'configValue', title: 'Value', width: 400 }
+                    ]
+                ]
+            });
+        
+    });
+
+
+    function addArticle(){
+        var url = 'cms/config_add.html';
+        localStorage.setItem('cms_config_add_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    function editArticle() {
+        var row = $('#cms_config_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a edit row!', 'info');
+            return false;
+        }
+
+        var url = 'cms/config_edit.html?id='+row.configCode;
+        localStorage.setItem('cms_config_edit_url',url);
+
+        var tab = $('#tabs').tabs('getSelected');  // get selected panel
+        tab.panel('refresh', url);
+    }
+
+    /*function delArticle() {
+        var row = $('#cms_config_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a delete row!', 'info');
+            return false;
+        }
+        $.messager.confirm('Confirm', 'Are you sure to delete select row?', function(r) {
+            if (r) {
+                // var index = $('#cms_config_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_config_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/config/remove.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#cms_config_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+
+                
+            }
+        });
+    }
+
+
+    function disableToggleArticle(){
+        var row = $('#cms_config_datagrid').datagrid('getSelected');
+        if(row == null){
+            $.messager.alert('Info', 'Please select a enable/disable row!', 'info');
+            return false;
+        }
+        var msg = row.disabled ? 'enable' : 'disable';
+        $.messager.confirm('Confirm', 'Are you sure to '+msg+' row?', function(r) {
+            if (r) {
+                // var index = $('#cms_config_datagrid').datagrid('getRowIndex', row);
+                // $('#cms_config_datagrid').datagrid('deleteRow', index);
+
+                var reqData = {id:row.id};
+                $.post('http://local.com/api/cms/config/disable.json',reqData,function(data,textStatus,jqXHR){
+                    if(data.success){
+                        $('#cms_config_datagrid').datagrid('reload');
+                    }else{
+                        $.messager.show({msg:data.message});
+                    }
+                },'json');
+                
+            }
+        });
+    }*/
+    // ===================================
+
+
+    </script>
+
+</div>

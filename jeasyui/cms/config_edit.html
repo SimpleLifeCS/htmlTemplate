@@ -1,0 +1,83 @@
+
+    <div id="cms_config_edit_container" style="padding: 10px; margin: 0px;">
+        <form id="cms_config_edit_form" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Edit User" data-options="inline: true">
+            <input type="hidden" name="configCode">
+            <table class="ext-data-table">
+                <tr>
+                    <td>ConfigType</td>
+                    <td colspan="3">
+                        <select id="configType" class="easyui-combobox" name="configType" data-options="required:true,fit:true,editable:false">
+                            <option value="text">Text</option>
+                            <option value="textarea">Textarea</option>
+                            <option value="select">Select</option>
+                            <option value="checkbox">CheckBox</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ConfigLabel</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="configLabel" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>ConfigContent</td>
+                    <td colspan="3" height="120"><input class="easyui-textbox" type="text" name="configContent" data-options="fit:true,multiline:true" /></td>
+                </tr>
+                <tr>
+                    <td>ConfigValue</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="configValue" data-options="required:true,fit:true" /></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="5">
+                        <a href="#" id="cms_config_edit_form_save_btn">Save</a>
+                        <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+    // ===================================
+    // save
+    $('#cms_config_edit_form_save_btn').linkbutton({
+        iconCls: 'ext-icon fa fa-floppy-o fa-lg',
+        width: 80,
+        onClick: function(){
+            var reqData = $('#cms_config_edit_form').find('input,select,textarea').filter(function () {
+                                return $.trim(this.value).length > 0
+                            }).serializeJSON();
+            $.post('http://local.com/api/cms/config/update.json',reqData,function(data,textStatus,jqXHR){
+                if(data.success){
+                    // tabBack();
+                }else{
+                    $.messager.show({msg:data.message});
+                }
+            },'json');
+        }
+    });
+
+    $(function(){
+        var url = localStorage.getItem('cms_config_edit_url');
+        var reqData = {configCode: getParameterByName('id',url)};
+
+        $.get('http://local.com/api/cms/config/get.json',reqData,function(data,textStatus,jqXHR){
+            if(data.success){
+                var resData = data.data;
+                $('#cms_config_edit_form').form('load',resData);
+            }else{
+                $.messager.show({msg:data.message});
+            }
+        },'json');
+
+    });
+
+    // ===================================
+
+    // ===================================
+    // parse
+    // $.parser.parse('.easyui-validatebox');
+    // ===================================
+    </script>
+</div>
