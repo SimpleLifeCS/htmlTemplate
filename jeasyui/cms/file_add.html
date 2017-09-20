@@ -1,20 +1,21 @@
     <div id="cms_file_add_container" style="padding: 10px; margin: 0px;">
         <form id="cms_file_add_form" enctype="multipart/form-data" method="post" style="padding: 5px; margin: 0px;" class="easyui-panel" title="Add Permission" data-options="inline: true" action="http://local.com/api/cms/file/save.json">
-            <!-- <input type="hidden" id="cms_file_add_form_owner" name="owner"> -->
+            <input type="hidden" id="cms_file_add_form_owner" name="owner">
             <table class="ext-data-table">
                 <tr>
                     <td>File</td><!-- class="easyui-filebox" -->
                     <td colspan="3">
                         <!--<input id="cms_file_add_form_files" type="file" name="files" multiple>-->
                         
-                        <div id="cms_file_add_form_filelist">Your browser doesn't have HTML5 support.</div>
+<!--                         <div id="cms_file_add_form_filelist">Your browser doesn't have HTML5 support.</div>
  
                         <div id="cms_file_add_form_file_upload_btn_container">
                             <a id="cms_file_add_form_pickfiles" href="javascript:;">[Select files]</a>
                             <a id="cms_file_add_form_uploadfiles" href="javascript:;">[Upload files]</a>
                         </div>
                          
-                        <pre id="cms_file_add_form_console"></pre>
+                        <pre id="cms_file_add_form_console"></pre> -->
+                        <input type="file" id="cms_file_add_form_files" multiple name="files" />
 
                     </td>
                 </tr>
@@ -31,7 +32,7 @@
                 <tr>
                     <td>&nbsp;</td>
                     <td colspan="5">
-                        <!-- <a href="#" id="cms_file_add_form_save_btn">Save</a> -->
+                        <a href="#" id="cms_file_add_form_save_btn">Save</a>
                         <a href="javascript:;" class="easyui-linkbutton" data-options="iconCls: 'ext-icon fa fa-arrow-left fa-lg', width: 80, onClick: tabBack">Back</a>
                     </td>
                 </tr>
@@ -42,64 +43,92 @@
 
     <script type="text/javascript">
     $(function () {
-// Custom example logic
-         
-        var uploader = new plupload.Uploader({
-            headers: {
-                        user: localStorage.getItem('user'),
-                        jwtoken: localStorage.getItem('jwtoken')},
-            runtimes : 'html5',
-             
-            browse_button : 'cms_file_add_form_pickfiles', // you can pass in id...
-            container: document.getElementById('cms_file_add_form_file_upload_btn_container'), // ... or DOM Element itself
-             
-            url : 'http://local.com/api/cms/file/save.json',
-             
-            filters : {
-                max_file_size : '5mb',
-                mime_types: [
-                    {title : 'Image files', extensions : 'jpg,jpeg,png'},
-                    {title : 'Doc files', extensions : 'xls,xlsx,doc,docx,ppt,pptx,pdf,zip,rar'}
-                ]
-            },
+        $('#cms_file_add_form_owner').val(localStorage.getItem('user'));
 
-            multipart_params: {owner: localStorage.getItem('user')},
-            file_data_name: 'files',
-         
-            // Flash settings
-            // flash_swf_url : '/plupload/js/Moxie.swf',
-         
-            // Silverlight settings
-            // silverlight_xap_url : '/plupload/js/Moxie.xap',
-             
-         
-            init: {
-                PostInit: function() {
-                    document.getElementById('cms_file_add_form_filelist').innerHTML = '';
-         
-                    document.getElementById('cms_file_add_form_uploadfiles').onclick = function() {
-                        uploader.start();
-                        return false;
-                    };
-                },
-         
-                FilesAdded: function(up, files) {
-                    plupload.each(files, function(file) {
-                        document.getElementById('cms_file_add_form_filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
-                    });
-                },
-         
-                UploadProgress: function(up, file) {
-                    document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
-                },
-         
-                Error: function(up, err) {
-                    document.getElementById('cms_file_add_form_console').innerHTML += "\nError #" + err.code + ": " + err.message;
-                }
-            }
+        // ===================================
+        // save
+        $('#cms_file_add_form_save_btn').linkbutton({
+            iconCls: 'ext-icon fa fa-upload fa-lg',
+            width: 80,
+            onClick: function(){
+                $.ajax({ 
+                    url: 'http://local.com/api/cms/file/save.json', 
+                    type: 'POST', 
+                    cache: false, 
+                    data: new FormData($('#cms_file_add_form')[0]), 
+                    headers: { user: localStorage.getItem('user'), jwtoken: localStorage.getItem('jwtoken')}, 
+                    processData: false, contentType: false 
+                }).done(function(data, textStatus, jqXHR) {
+                    tabBack();
+                    // console.log(data);
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    $.messager.show({msg:data.message});
+                });
+
+            }
         });
-         
-        uploader.init();
+
+
+
+
+        // // Custom example logic
+        //  
+        // var uploader = new plupload.Uploader({
+        //     headers: {
+        //                 user: localStorage.getItem('user'),
+        //                 jwtoken: localStorage.getItem('jwtoken')},
+        //     runtimes : 'html5',
+        //      
+        //     browse_button : 'cms_file_add_form_pickfiles', // you can pass in id...
+        //     container: document.getElementById('cms_file_add_form_file_upload_btn_container'), // ... or DOM Element itself
+        //      
+        //     url : 'http://local.com/api/cms/file/save.json',
+        //      
+        //     filters : {
+        //         max_file_size : '5mb',
+        //         mime_types: [
+        //             {title : 'Image files', extensions : 'jpg,jpeg,png'},
+        //             {title : 'Doc files', extensions : 'xls,xlsx,doc,docx,ppt,pptx,pdf,zip,rar'}
+        //         ]
+        //     },
+        //     multipart_params: {owner: localStorage.getItem('user')},
+        //     file_data_name: 'files',
+        //  
+        //     // Flash settings
+        //     // flash_swf_url : '/plupload/js/Moxie.swf',
+        //  
+        //     // Silverlight settings
+        //     // silverlight_xap_url : '/plupload/js/Moxie.xap',
+        //      
+        //  
+        //     init: {
+        //         PostInit: function() {
+        //             document.getElementById('cms_file_add_form_filelist').innerHTML = '';
+        //  
+        //             document.getElementById('cms_file_add_form_uploadfiles').onclick = function() {
+        //                 uploader.start();
+        //                 return false;
+        //             };
+        //         },
+        //  
+        //         FilesAdded: function(up, files) {
+        //             plupload.each(files, function(file) {
+        //                 document.getElementById('cms_file_add_form_filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+        //             });
+        //         },
+        //  
+        //         UploadProgress: function(up, file) {
+        //             document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+        //         },
+        //  
+        //         Error: function(up, err) {
+        //             document.getElementById('cms_file_add_form_console').innerHTML += "\nError #" + err.code + ": " + err.message;
+        //         }
+        //     }
+        // });
+        //  
+        // uploader.init();
         
     });
 
