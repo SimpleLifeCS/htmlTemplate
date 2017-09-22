@@ -141,29 +141,29 @@
         });
 
 
-        $.ajaxSetup({
-            headers: {
-                user: localStorage.getItem('user'),
-                jwtoken: localStorage.getItem('jwtoken')
-            },
-            complete: function(jqXHR, textStatus){
-                // console.log(jqXHR);
-                if(jqXHR.status == 401){
-                    location.href = 'http://static.local.com/jeasyui/login.html';
-                    return;
-                }
-                if(jqXHR.responseJSON){
-                    // var data = jQuery.parseJSON(jqXHR.responseText);
-                    localStorage.setItem('jwtoken',jqXHR.responseJSON.jwtoken);
-                    if(jqXHR.responseJSON.success == false){
-                        $.messager.show({ msg: jqXHR.responseJSON.message });
-                    }
-                }
-                // jwtoken
-                // jqXHR.always(function( data|jqXHR, textStatus, jqXHR|errorThrown ) { });
-            }
+        // $.ajaxSetup({
+        //        async: false,
+        // });
+
+        $(document).ajaxSend(function(event, jqXHR , ajaxOptions){
+            jqXHR.setRequestHeader('user',localStorage.getItem('user'));
+            jqXHR.setRequestHeader('jwtoken', localStorage.getItem('jwtoken'));
+            ajaxOptions.async = false;
         });
 
+        $(document).ajaxComplete(function(event, jqXHR , ajaxOptions){
+            if(jqXHR.status == 401){
+                location.href = 'http://static.local.com/jeasyui/login.html';
+                return;
+            }
+            if(jqXHR.responseJSON){
+                // var data = jQuery.parseJSON(jqXHR.responseText);
+                localStorage.setItem('jwtoken',jqXHR.responseJSON.jwtoken);
+                if(jqXHR.responseJSON.success == false){
+                    $.messager.show({ msg: jqXHR.responseJSON.message });
+                }
+            }
+        });
 
 
     });
